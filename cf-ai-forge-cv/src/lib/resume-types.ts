@@ -8,10 +8,17 @@ export interface ResumeContact {
   github: string
 }
 
+export interface SkillCategory {
+  id: string
+  label: string   // e.g. "Programming Languages", "Frameworks & Tools"
+  skills: string[]
+}
+
 export interface ExperienceEntry {
   id: string
   company: string
   role: string
+  location?: string  // e.g. "London, UK" or "Remote"
   dates: string
   bullets: string[]
 }
@@ -24,12 +31,72 @@ export interface EducationEntry {
   details: string
 }
 
+export interface ProjectEntry {
+  id: string
+  name: string
+  description: string
+  dates: string
+  bullets: string[]
+}
+
+export interface CertificationEntry {
+  id: string
+  name: string
+  issuer: string
+  date: string
+  details: string
+}
+
+export interface AwardEntry {
+  id: string
+  name: string
+  description: string
+  date: string
+}
+
+export interface PublicationEntry {
+  id: string
+  title: string
+  venue: string
+  date: string
+  description: string
+}
+
+/** Controls which sections are present and in what order */
+export type SectionKey =
+  | "summary"
+  | "experience"
+  | "skills"
+  | "education"
+  | "projects"
+  | "certifications"
+  | "awards"
+  | "publications"
+
+export const SECTION_LABELS: Record<SectionKey, string> = {
+  summary: "Summary",
+  experience: "Experience",
+  skills: "Skills",
+  education: "Education",
+  projects: "Projects",
+  certifications: "Certifications",
+  awards: "Awards",
+  publications: "Publications",
+}
+
 export interface ResumeData {
   contact: ResumeContact
   summary: string
+  /** Ordered list of section keys — controls rendering order */
+  sectionOrder: SectionKey[]
   experience: ExperienceEntry[]
-  skills: string[]
+  /** Categorized skills — each category has a label and a list of skill strings */
+  skills: SkillCategory[]
   education: EducationEntry[]
+  projects: ProjectEntry[]
+  certifications: CertificationEntry[]
+  awards: AwardEntry[]
+  publications: PublicationEntry[]
 }
 
 export interface ChatMessage {
@@ -44,21 +111,51 @@ export interface HighlightedField {
   type: "changed" | "added" | "removed"
 }
 
+/** Convert old flat string[] skills to SkillCategory[], or validate new format */
+function migrateSkills(raw: unknown): SkillCategory[] {
+  if (!Array.isArray(raw) || raw.length === 0) return []
+  // Old format: string[]
+  if (typeof raw[0] === "string") {
+    return [{ id: "skills-general", label: "Skills", skills: raw as string[] }]
+  }
+  // New format: SkillCategory[]
+  return (raw as SkillCategory[]).map((cat) => ({
+    id: cat.id || generateId(),
+    label: cat.label || "Skills",
+    skills: Array.isArray(cat.skills) ? cat.skills.filter(Boolean) : [],
+  }))
+}
+
+export function migrateResumeData(raw: Partial<ResumeData>): ResumeData {
+  return {
+    contact: raw.contact ?? {
+      name: "", title: "", email: "", phone: "", location: "", linkedin: "", github: "",
+    },
+    summary: raw.summary ?? "",
+    sectionOrder: (raw.sectionOrder as SectionKey[] | undefined) ??
+      ["summary", "experience", "skills", "education"],
+    experience: raw.experience ?? [],
+    skills: migrateSkills(raw.skills),
+    education: raw.education ?? [],
+    projects: raw.projects ?? [],
+    certifications: raw.certifications ?? [],
+    awards: raw.awards ?? [],
+    publications: raw.publications ?? [],
+  }
+}
+
 export function createEmptyResume(): ResumeData {
   return {
-    contact: {
-      name: "",
-      title: "",
-      email: "",
-      phone: "",
-      location: "",
-      linkedin: "",
-      github: "",
-    },
+    contact: { name: "", title: "", email: "", phone: "", location: "", linkedin: "", github: "" },
     summary: "",
+    sectionOrder: ["summary", "experience", "skills", "education"],
     experience: [],
     skills: [],
     education: [],
+    projects: [],
+    certifications: [],
+    awards: [],
+    publications: [],
   }
 }
 
@@ -74,7 +171,8 @@ export function createSampleResume(): ResumeData {
       github: "github.com/alexchen",
     },
     summary:
-      "Software engineer with 6+ years of experience building scalable distributed systems and cloud-native applications. Proven track record designing high-throughput microservices handling 10M+ daily requests. Deep expertise in Kubernetes orchestration and CI/CD pipeline optimization.",
+      "Software engineer with 6+ years of experience building scalable distributed systems and cloud-native applications. Proven track record designing high-throughput microservices handling 10M+ daily requests.",
+    sectionOrder: ["summary", "experience", "skills", "education"],
     experience: [
       {
         id: "exp-1",
@@ -99,32 +197,12 @@ export function createSampleResume(): ResumeData {
           "Developed internal CLI tooling in Go adopted by 30+ engineers, reducing average onboarding time by 40%",
         ],
       },
-      {
-        id: "exp-3",
-        company: "TechBase",
-        role: "Software Engineer",
-        dates: "2018 - 2019",
-        bullets: [
-          "Developed RESTful APIs in Node.js serving 1M+ requests/day with 99.9% uptime",
-          "Integrated monitoring stack with Datadog, reducing MTTR from 45min to 12min",
-        ],
-      },
     ],
     skills: [
-      "Go",
-      "TypeScript",
-      "Python",
-      "Rust",
-      "Kubernetes",
-      "Docker",
-      "Terraform",
-      "AWS",
-      "PostgreSQL",
-      "Redis",
-      "Kafka",
-      "Apache Flink",
-      "CI/CD",
-      "System Design",
+      { id: "skills-lang",  label: "Programming Languages", skills: ["Go", "TypeScript", "Python"] },
+      { id: "skills-infra", label: "Cloud & Infrastructure",  skills: ["Kubernetes", "Docker", "Terraform", "AWS"] },
+      { id: "skills-data",  label: "Databases & Messaging",  skills: ["PostgreSQL", "Redis", "Kafka"] },
+      { id: "skills-tools", label: "Tools & Practices",      skills: ["CI/CD"] },
     ],
     education: [
       {
@@ -135,6 +213,10 @@ export function createSampleResume(): ResumeData {
         details: "Dean's List, Teaching Assistant for Distributed Systems",
       },
     ],
+    projects: [],
+    certifications: [],
+    awards: [],
+    publications: [],
   }
 }
 

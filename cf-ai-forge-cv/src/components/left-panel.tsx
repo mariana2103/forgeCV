@@ -1,6 +1,7 @@
 "use client"
 
 import { CommandDropzone } from "./command-dropzone"
+import { ProfilePanel } from "./profile-panel"
 import { JdPanel } from "./jd-panel"
 import { ChatPanel } from "./chat-panel"
 
@@ -13,6 +14,7 @@ export function LeftPanel() {
         </h2>
       </div>
       <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
+        <ProfilePanel />
         <CommandDropzone />
         <JdPanel />
         <ChatPanel />

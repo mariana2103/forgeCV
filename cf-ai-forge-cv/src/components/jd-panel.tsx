@@ -93,8 +93,7 @@ export function JdPanel() {
             value={jobDescription}
             onChange={(e) => setJobDescription(e.target.value)}
             placeholder="Paste the target job description here..."
-            rows={5}
-            className="resize-none text-xs bg-secondary/30 border-border min-h-[100px]"
+            className="resize-none text-xs bg-secondary/30 border-border h-[130px] overflow-y-auto"
             disabled={status === "tailoring"}
           />
           <Button

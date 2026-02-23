@@ -1,93 +1,113 @@
 export interface ResumeTemplate {
   id: string
   name: string
+  /** Short description shown in picker */
+  description: string
   /** Font stack applied to the resume container in the live canvas */
   fontFamily: string
   /** Tailwind classes for the candidate name */
   nameClass: string
-  /** Tailwind classes for section headings (Experience, Skills, etc.) */
+  /** Tailwind classes for section headings */
   headingClass: string
-  /** CSS injected into the <style> block of the print/export HTML */
+  /** Primary text color used for the name (hex) */
+  textColor: string
+  /** Whether this template supports a user-chosen accent color */
+  supportsAccent?: boolean
+  /** Default accent hex (used when supportsAccent is true) */
+  defaultAccent?: string
+  /**
+   * CSS injected into the <style> block of the print/export HTML.
+   * Use {{ACCENT}} as a placeholder — it will be replaced with the live accent color.
+   */
   printCss: string
 }
 
 export const RESUME_TEMPLATES: ResumeTemplate[] = [
+  /* ─── 1. Harvard ─── Calibri, centered header, hairline rules ─── */
   {
-    id: "modern",
-    name: "Modern",
-    fontFamily: "system-ui, -apple-system, sans-serif",
-    nameClass: "text-2xl font-bold tracking-tight text-foreground",
+    id: "harvard",
+    name: "Harvard",
+    description: "Calibri, centered header with hairline rules — the classic academic standard.",
+    fontFamily: "Calibri, 'Gill Sans MT', 'Trebuchet MS', sans-serif",
+    nameClass: "text-[24px] font-bold tracking-tight text-center w-full",
     headingClass:
-      "text-[10px] font-semibold uppercase tracking-widest text-primary border-b border-primary/20 pb-1",
+      "text-[9px] font-bold uppercase tracking-[2px] border-t border-black/30 pt-1 w-full",
+    textColor: "#111111",
     printCss: `
-      body { font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif; font-size: 10.5pt; line-height: 1.45; color: #111; }
-      h1  { font-size: 20pt; font-weight: 700; margin-bottom: 2pt; }
-      h2  { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;
-            color: #e8610a; border-bottom: 1.5px solid #e8610a; padding-bottom: 3pt; margin: 14pt 0 6pt; }
+      body { font-family: Calibri, 'Gill Sans MT', sans-serif; font-size: 10.5pt; line-height: 1.45; color: #111; }
+      .header { text-align: center; margin-bottom: 8pt; }
+      h1 { font-size: 20pt; font-weight: 700; }
+      .contact-line { font-size: 9pt; color: #444; margin-top: 2pt; }
+      h2 { font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5pt;
+           border-top: 0.75pt solid #111; padding-top: 3pt; margin: 12pt 0 5pt; }
+      .job-header { display: flex; justify-content: space-between; align-items: baseline; }
+      h3 { font-size: 10.5pt; font-weight: 600; }
+      .dates { font-size: 9.5pt; color: #444; }
+      ul { padding-left: 16pt; margin: 3pt 0; }
+      li { margin-bottom: 2pt; }
+      .skills-line { margin-bottom: 3pt; font-size: 10pt; }
+      .skills-label { font-weight: 600; }
     `,
   },
+
+  /* ─── 2. Rezi Classic ─── Georgia, dark navy, ALL CAPS rules, · bullets ─── */
   {
-    id: "classic",
-    name: "Classic",
+    id: "rezi",
+    name: "Rezi",
+    description: "Georgia serif, dark navy headings, ATS-optimized — great for corporate roles.",
     fontFamily: "Georgia, 'Times New Roman', serif",
-    nameClass: "text-[26px] font-bold tracking-tight text-foreground",
+    nameClass: "text-[22px] font-bold tracking-tight",
     headingClass:
-      "text-[10px] font-bold uppercase tracking-widest border-b-2 border-foreground/30 pb-1",
+      "text-[9px] font-bold uppercase tracking-[2px] border-b border-[#c8c8c8] pb-0.5 w-full",
+    textColor: "#1a1a2e",
     printCss: `
       body { font-family: Georgia, 'Times New Roman', serif; font-size: 10.5pt; line-height: 1.45; color: #111; }
-      h1  { font-size: 20pt; font-weight: 700; margin-bottom: 2pt; }
-      h2  { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
-            border-bottom: 2px solid #333; padding-bottom: 3pt; margin: 14pt 0 6pt; }
+      h1 { font-size: 20pt; font-weight: 700; color: #1a1a2e; margin-bottom: 2pt; }
+      .contact-line { font-size: 9pt; color: #444; margin-bottom: 8pt; }
+      h2 { font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5pt;
+           color: #1a1a2e; border-bottom: 0.75pt solid #c8c8c8; padding-bottom: 2pt; margin: 13pt 0 5pt; }
+      .job-meta { font-size: 10pt; margin-bottom: 3pt; }
+      .job-role { font-weight: 600; }
+      ul { list-style: none; padding-left: 12pt; margin: 3pt 0; }
+      li { margin-bottom: 2pt; }
+      li::before { content: '·'; margin-right: 5pt; font-size: 13pt; line-height: 0; vertical-align: middle; }
+      .skills-line { margin-bottom: 3pt; font-size: 10pt; }
+      .skills-label { font-weight: 700; }
+      .dates-meta { font-size: 9.5pt; color: #555; }
     `,
   },
+
+  /* ─── 3. Rezi+ ─── Same as Rezi but with user-customizable accent color ─── */
   {
-    id: "compact",
-    name: "Compact",
-    fontFamily: "Arial, Helvetica, sans-serif",
-    nameClass: "text-xl font-bold tracking-tight text-foreground",
+    id: "rezi-colored",
+    name: "Rezi+",
+    description: "Rezi with an accent color on the name and role titles. Pick your color.",
+    fontFamily: "Georgia, 'Times New Roman', serif",
+    nameClass: "text-[22px] font-bold tracking-tight",
     headingClass:
-      "text-[9px] font-bold uppercase tracking-widest text-muted-foreground border-b border-border pb-0.5",
+      "text-[9px] font-bold uppercase tracking-[2px] border-b border-[#c8c8c8] pb-0.5 w-full",
+    textColor: "#5B6FA6",
+    supportsAccent: true,
+    defaultAccent: "#5B6FA6",
     printCss: `
-      body { font-family: Arial, Helvetica, sans-serif; font-size: 9.5pt; line-height: 1.3; color: #111; }
-      h1  { font-size: 16pt; font-weight: 700; margin-bottom: 2pt; }
-      h2  { font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
-            border-bottom: 1px solid #999; padding-bottom: 2pt; margin: 10pt 0 4pt; color: #444; }
-    `,
-  },
-  {
-    id: "technical",
-    name: "Technical",
-    fontFamily: "'Geist Mono', 'Courier New', Consolas, monospace",
-    nameClass: "text-2xl font-bold tracking-tight font-mono text-foreground",
-    headingClass:
-      "text-[10px] font-bold text-primary font-mono before:content-['//'] before:mr-1.5 before:opacity-60",
-    printCss: `
-      body { font-family: 'Courier New', Consolas, monospace; font-size: 10pt; line-height: 1.4; color: #111; }
-      h1  { font-size: 18pt; font-weight: 700; margin-bottom: 2pt; }
-      h2  { font-size: 9.5pt; font-weight: 700; color: #e8610a; margin: 14pt 0 6pt; }
-      h2::before { content: '// '; opacity: 0.7; }
-    `,
-  },
-  {
-    id: "executive",
-    name: "Executive",
-    fontFamily: "'Palatino Linotype', Palatino, Georgia, serif",
-    nameClass:
-      "text-[28px] font-bold tracking-wide text-foreground text-center w-full",
-    headingClass:
-      "text-[9px] font-bold uppercase tracking-[3px] text-center border-y border-foreground/20 py-1 w-full",
-    printCss: `
-      body { font-family: 'Palatino Linotype', Palatino, Georgia, serif; font-size: 11pt; line-height: 1.5; color: #111; }
-      h1  { font-size: 22pt; font-weight: 700; text-align: center; margin-bottom: 4pt; }
-      .contact { text-align: center; }
-      h2  { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 3px;
-            text-align: center; border-top: 1px solid #999; border-bottom: 1px solid #999;
-            padding: 3pt 0; margin: 14pt 0 6pt; }
+      body { font-family: Georgia, 'Times New Roman', serif; font-size: 10.5pt; line-height: 1.45; color: #111; }
+      h1 { font-size: 20pt; font-weight: 700; color: {{ACCENT}}; margin-bottom: 2pt; }
+      .contact-line { font-size: 9pt; color: #444; margin-bottom: 8pt; }
+      h2 { font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5pt;
+           color: #1a1a2e; border-bottom: 0.75pt solid #c8c8c8; padding-bottom: 2pt; margin: 13pt 0 5pt; }
+      .job-meta { font-size: 10pt; margin-bottom: 3pt; }
+      .job-role { font-weight: 600; color: {{ACCENT}}; }
+      ul { list-style: none; padding-left: 12pt; margin: 3pt 0; }
+      li { margin-bottom: 2pt; }
+      li::before { content: '·'; margin-right: 5pt; font-size: 13pt; line-height: 0; vertical-align: middle; }
+      .skills-line { margin-bottom: 3pt; font-size: 10pt; }
+      .skills-label { font-weight: 700; }
+      .dates-meta { font-size: 9.5pt; color: #555; }
     `,
   },
 ]
 
-export const DEFAULT_TEMPLATE_ID = "modern"
+export const DEFAULT_TEMPLATE_ID = "harvard"
 
 export function getTemplate(id: string): ResumeTemplate {
   return RESUME_TEMPLATES.find((t) => t.id === id) ?? RESUME_TEMPLATES[0]

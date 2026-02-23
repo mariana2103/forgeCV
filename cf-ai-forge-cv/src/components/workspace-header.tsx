@@ -66,6 +66,7 @@ export function WorkspaceHeader({
           <button
             key={t.id}
             onClick={() => setTemplateId(t.id)}
+            title={t.description}
             className={cn(
               "rounded px-2.5 py-1 text-[10px] font-medium transition-colors whitespace-nowrap",
               templateId === t.id
