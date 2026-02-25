@@ -1,12 +1,12 @@
 # ForgeCV — Engineering Log
 
-> Real friction points hit during the build. Not what the docs say should happen — what *actually* happened.
+> Real friction points hit during the build.
 
 ---
 
 ### Hurdle #1 — `wrangler.jsonc` Trailing Comma (2026-02-22)
 
-**The Conflict:** After manually adding the `ai`, `d1_databases`, and `r2_buckets` bindings to `wrangler.jsonc`, running `npm run cf-typegen` threw a `CommaExpected` parse error on the `"ai"` key.
+**The Conflict:** After manually adding the `ai`, and `r2_buckets` bindings to `wrangler.jsonc`, running `npm run cf-typegen` threw a `CommaExpected` parse error on the `"ai"` key.
 
 **The Pivot:** The issue was that the scaffolded `"observability"` block had no trailing comma before our new bindings. JSON (even JSONC) requires commas between sibling keys — the scaffolder left the file in a state where appending new keys broke it silently.
 
@@ -26,11 +26,11 @@
 
 ### Hurdle #3 — v0 Generated a Self-Contained Project Inside `src/` (2026-02-22)
 
-**The Conflict:** After generating the UI with Vercel's v0 and copying the output into the `src/` directory, the project had two conflicting config stacks: the Cloudflare-native one at the root (`next.config.ts`, `wrangler.jsonc`, `package.json` with `@opennextjs/cloudflare`) and a plain Next.js one inside `src/` (`src/package.json`, `src/next.config.mjs`, `src/tsconfig.json`, `src/styles/globals.css`, `src/pnpm-lock.yaml`). The `src/styles/globals.css` was a light-theme file that conflicted with the dark theme in `src/app/globals.css`.
+**The Conflict:** After generating the UI and copying the output into the `src/` directory, the project had two conflicting config stacks: the Cloudflare-native one at the root (`next.config.ts`, `wrangler.jsonc`, `package.json` with `@opennextjs/cloudflare`) and a plain Next.js one inside `src/` (`src/package.json`, `src/next.config.mjs`, `src/tsconfig.json`, `src/styles/globals.css`, `src/pnpm-lock.yaml`). The `src/styles/globals.css` was a light-theme file that conflicted with the dark theme in `src/app/globals.css`.
 
 **The Pivot:** Deleted all misplaced config files from `src/`. Moved `src/components.json` to the project root. Merged the 30+ missing Radix UI and utility dependencies from `src/package.json` into the real root `package.json` and reinstalled. Kept only `src/app/globals.css` (the dark, Cloudflare-orange theme).
 
-**The Lesson:** v0 generates standalone Next.js projects — it has no concept of your existing project structure. When copying v0 output into an existing repo, only take the `src/app` and `src/components` directories. Never let it overwrite config files at the root.
+**The Lesson:** By generating standalone Next.js projects — it has no concept of your existing project structure. When copying  output into an existing repo, only take the `src/app` and `src/components` directories. Never let it overwrite config files at the root.
 
 ---
 
